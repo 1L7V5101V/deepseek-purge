@@ -12,7 +12,7 @@ import type {} from '@deepseek-ai/dsh-client-ui-sidebar-browser/client'
 import type {} from '@deepseek-ai/dsh-client-ui-input-trigger/client'
 // The `file` entry of `SidebarRightResourceParamsMap`, which types `{ params: { line } }` below.
 import type {} from '@deepseek-ai/dsh-client-ui-sidebar-documentpreview/client'
-import { fileAddressFor } from '@deepseek-ai/dsh-util-workspace-path'
+import { fileAddressFor, resolveWorkspacePath } from '@deepseek-ai/dsh-util-workspace-path'
 // Type-only service and declaration merges used by the apply world.
 import type {} from '@deepseek-ai/dsh-client-locale/client'
 import type {} from '@deepseek-ai/dsh-client-ui-conversation/client'
@@ -74,7 +74,7 @@ export const CHAT_NODE_INJECT: ChatNodeInjected = {
 /** Services required by the Chat target and its presentation registrations. */
 export const inject = [
   'slots', 'sessions', 'uiWorkspace', 'uiSession', 'uiConversation', 'locale',
-  'configForms', 'remote', 'remote.session', 'sidebarRight',
+  'configForms', 'remote', 'remote.session', 'remote.workspaceFiles', 'sidebarRight',
 ]
 
 /**
@@ -275,6 +275,14 @@ export function apply(ctx: Context): void {
             (attachment: ImageAttachmentRef) => ctx.uiConversation.imageUrl(sessionId, attachment),
             { peek: (attachment: ImageAttachmentRef) => ctx.uiConversation.peekImageUrl(sessionId, attachment) },
           ),
+          readVisualizeHtml: async (path, signal) => {
+            const cwd = ctx.sessions.list.getSnapshot().byId[sessionId]?.cwd
+            const target = resolveWorkspacePath(cwd, path)
+            const result = await ctx.remote.workspaceFiles.readBytes(sessionId, target, {}, signal)
+            signal.throwIfAborted()
+            if (!result.ok) throw new Error(result.error.code)
+            return new TextDecoder().decode(result.value.data)
+          },
           chatScroll: {
             save: (position) => {
               if (position === null) chatScrollPositions.delete(sessionId)

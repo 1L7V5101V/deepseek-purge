@@ -24,6 +24,14 @@ export interface MarkdownDelegate {
    * @param options - First line to reveal when the destination specifies a line or range.
    */
   readonly openFile?: ((path: string, options?: { line?: number }) => void) | undefined
+  /**
+   * Read a visualization HTML file's complete contents for inline rendering.
+   * Absent handlers leave the directive's path as inert text.
+   * @param path - Absolute or workspace-relative HTML file path.
+   * @param signal - Caller lifetime; aborts the in-flight read on unmount.
+   * @returns the decoded UTF-8 HTML source.
+   */
+  readonly readVisualizeHtml?: ((path: string, signal: AbortSignal) => Promise<string>) | undefined
 }
 
 const MarkdownDelegateContext = createContext<MarkdownDelegate>({})
@@ -44,8 +52,12 @@ export function MarkdownDelegateProvider({
   openExternalLink,
   openFile,
   fileImages,
+  readVisualizeHtml,
 }: MarkdownDelegateProviderProps): ReactNode {
-  const delegate = useMemo(() => ({ openExternalLink, openFile, fileImages }), [openExternalLink, openFile, fileImages])
+  const delegate = useMemo(
+    () => ({ openExternalLink, openFile, fileImages, readVisualizeHtml }),
+    [openExternalLink, openFile, fileImages, readVisualizeHtml],
+  )
   return (
     <MarkdownDelegateContext.Provider value={delegate}>
       {children}

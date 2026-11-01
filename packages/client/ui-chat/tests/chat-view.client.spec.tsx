@@ -510,6 +510,7 @@ function makeHarness(
     loadOlder,
     loadThrough,
     loadImage: vi.fn(() => Promise.reject(new Error('not used'))),
+    readVisualizeHtml: vi.fn(() => Promise.reject(new Error('not used'))),
     chatScroll,
     forkAt,
     // Absent-service default; mention tests override with a real resolver.

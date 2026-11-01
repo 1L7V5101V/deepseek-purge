@@ -320,6 +320,8 @@ export interface ChatViewInjected {
   openExternalLink: (url: string) => void
   openFile: (path: string, options?: OpenFileOptions) => Promise<void>
   loadOlder: () => void
+  /** Read one visualization HTML file's complete UTF-8 source for inline rendering. */
+  readVisualizeHtml: (path: string, signal: AbortSignal) => Promise<string>
   /** Jump loader: page history back through seq; resolves when the window covers it. */
   loadThrough: (seq: SessionSeq) => Promise<void>
   loadImage: MessageImageLoader

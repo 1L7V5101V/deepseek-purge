@@ -1,0 +1,16 @@
+.root {
+  margin: calc(var(--dsw-font-size-base, 14px) * 0.5) 0;
+}
+
+.wide {
+  margin: calc(var(--dsw-font-size-base, 14px) * 0.5) 0;
+}
+
+.frame {
+  display: block;
+  width: 100%;
+  min-height: 320px;
+  border: 1px solid var(--dsw-alias-border-l2, transparent);
+  border-radius: 8px;
+  background: var(--dsw-alias-bg-layer-1, transparent);
+}
