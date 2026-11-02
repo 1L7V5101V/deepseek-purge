@@ -40,9 +40,9 @@ describe('nodeToMarkdown', () => {
       .toBe('公式 $\\Delta n=(G/C_A)^{1/3}$。')
   })
 
-  it('restores display TeX as a block', () => {
+  it('restores display TeX on one line inside its block', () => {
     expect(markdown(`<p>推得</p>${DISPLAY_MATH}<p>其中 c 为常数。</p>`))
-      .toBe('推得\n\n$$\na^2+b^2=c^2\n$$\n\n其中 c 为常数。')
+      .toBe('推得\n\n$$a^2+b^2=c^2$$\n\n其中 c 为常数。')
   })
 
   it('fences code in its recorded language and drops the toolbar', () => {

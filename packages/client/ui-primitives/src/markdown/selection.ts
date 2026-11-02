@@ -224,7 +224,7 @@ function blocksOf(node: Node): string[] {
   if (element.matches('.md-code-block')) return [fenceOf(element)]
   if (element.classList.contains('katex-display')) {
     const tex = texSource(element.querySelector('.katex') ?? element)
-    return tex === undefined ? [] : ['$$\n' + tex + '\n$$']
+    return tex === undefined ? [] : ['$$' + tex + '$$']
   }
   if (element.classList.contains('katex')) {
     const tex = texSource(element)
