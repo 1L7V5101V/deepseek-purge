@@ -14,6 +14,8 @@ import { MessageIconActions } from './MessageIconActions.tsx'
 import css from './MessageItem.module.css'
 
 const EMPTY_TEXT_FACTS: Readonly<Partial<UserTextFacts>> = {}
+/** Transcript rows parse Markdown, so block structure owns their whitespace. */
+const MARKDOWN_TEXT_FACTS: Readonly<Partial<UserTextFacts>> = { markdown: true }
 
 type UserImage = Extract<UserMessageNode['content'][number], { type: 'image' }>
 type UserFile = Extract<UserMessageNode['content'][number], { type: 'file' }>
@@ -163,7 +165,7 @@ function TurnMaxTokensItem({ t }: {
 /** Right-aligned bubble shared by user and steering rows. */
 function UserStyleBubble({
   content, loadImage, renderFactorySlot, actions, pending = false, echo = false, referenceLabels, skillNames,
-  previewAttachments, facts: inputFacts = EMPTY_TEXT_FACTS, interactive = false,
+  previewAttachments, facts: inputFacts = EMPTY_TEXT_FACTS, markdownFacts = MARKDOWN_TEXT_FACTS, interactive = false,
 }: {
   content: readonly unknown[]
   renderFactorySlot: PropsRenderFactories['renderFactorySlot']
@@ -181,6 +183,8 @@ function UserStyleBubble({
   previewAttachments?: readonly UserContentAttachment[]
   /** Inputs used by text transforms, separate from row and rendering props. */
   facts?: Readonly<Partial<UserTextFacts>>
+  /** Text-transform inputs this row adds on top of `facts`; transcript rows parse Markdown by default. */
+  markdownFacts?: Readonly<Partial<UserTextFacts>>
 } & Pick<ChatNodeOwnerProps, 'loadImage'> & Pick<UserContentInput, 'interactive'>): ReactNode {
   const parts = useMemo(() => contentParts(content), [content])
   const prepared = useMemo<UserContentData>(() => ({
@@ -191,9 +195,12 @@ function UserStyleBubble({
   }), [parts, previewAttachments, referenceLabels])
   const facts = useMemo<Readonly<Partial<UserTextFacts>>>(() => ({
     ...inputFacts,
+    // A skill resolved for this step keeps its `/name` chip: the command rule
+    // finds it, so Markdown withholds its whole-message block.
+    ...(markdownFacts.markdown === true && skillNames?.length ? {} : markdownFacts),
     ...(referenceLabels === undefined ? {} : { sessionLabels: referenceLabels }),
     ...(skillNames === undefined ? {} : { skillNames }),
-  }), [inputFacts, referenceLabels, skillNames])
+  }), [inputFacts, markdownFacts, referenceLabels, skillNames])
   return (
     <div
       className={css.userRow}
@@ -228,6 +235,7 @@ export function PendingSteeringBubble({ content, loadImage, renderFactorySlot, t
       renderFactorySlot={renderFactorySlot}
       loadImage={loadImage}
       pending
+      markdownFacts={EMPTY_TEXT_FACTS}
       actions={text => (
         <MessageIconActions
           text={text}
@@ -281,6 +289,7 @@ export function PendingSubmissionBubble({ submission, loadImage, renderFactorySl
       loadImage={loadImage}
       pending={submission.placement === 'steering'}
       echo
+      markdownFacts={submission.placement === 'steering' ? EMPTY_TEXT_FACTS : MARKDOWN_TEXT_FACTS}
       actions={text => (
         <MessageIconActions
           text={text}

@@ -6,6 +6,12 @@
  * plus the math extensions, so the arms differ only where TeX delimiters
  * begin a math construct (a `$$` block is a paragraph while streaming and a
  * math block once settled, by design).
+ *
+ * Both arms disable GFM's single-tilde strikethrough. In Chinese scientific
+ * prose an ASCII tilde between two numbers means a range (`800~1100 nC/m`,
+ * `0.5~1`), and two such ranges in one sentence pair them into a
+ * strikethrough that deletes everything between them. Strikethrough keeps
+ * working with the double tilde.
  */
 
 import type { Root } from 'mdast'
@@ -27,7 +33,7 @@ import { mathCompatibility } from './mathCompatibility.ts'
  */
 export function parseGfm(text: string): Root {
   return recoverVisualize(recoverLocalImages(fromMarkdown(text, {
-    extensions: [gfm(), cjkFriendlyStrong()],
+    extensions: [gfm({ singleTilde: false }), cjkFriendlyStrong()],
     mdastExtensions: [gfmFromMarkdown()],
   }), text), text)
 }
@@ -40,7 +46,7 @@ export function parseGfm(text: string): Root {
  */
 export function parseGfmWithMath(text: string): Root {
   return recoverVisualize(recoverLocalImages(fromMarkdown(text, {
-    extensions: [gfm(), cjkFriendlyStrong(), mathCompatibility(), math()],
+    extensions: [gfm({ singleTilde: false }), cjkFriendlyStrong(), mathCompatibility(), math()],
     mdastExtensions: [gfmFromMarkdown(), mathFromMarkdown()],
   }), text), text)
 }

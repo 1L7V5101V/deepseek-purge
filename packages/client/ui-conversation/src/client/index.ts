@@ -9,6 +9,11 @@ export interface UserTextDataMap {
     /** Optional display-only text; absence renders the original substring, while an empty string hides it. */
     readonly display?: string
   }
+  /** A block that renders as Markdown; covers its original source verbatim. */
+  markdown: {
+    /** Exact original source, parsed by the Markdown renderer rather than shown literally. */
+    readonly source: string
+  }
 }
 
 /** Caller-supplied JSON business facts and text-transform flags, never services or actions; absent flags are disabled. */
@@ -17,6 +22,8 @@ export interface UserTextFacts {
   readonly collapseWhitespace: boolean
   /** Remove display whitespace only at the document's outer edges, without crossing business nodes. */
   readonly trimWhitespace: boolean
+  /** Render Markdown blocks through the `markdown` node; turns off the whitespace collapse that Markdown block structure owns. */
+  readonly markdown: boolean
 }
 
 export type {

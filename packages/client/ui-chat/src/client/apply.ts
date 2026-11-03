@@ -32,6 +32,7 @@ import { ChatView } from './chat/ChatView.tsx'
 import { ChatFlow } from './chat/ChatFlow.tsx'
 import { registerChatNodeRenderers } from './chat/register-node-renderers.ts'
 import { UserContent } from './chat/UserContent.tsx'
+import { MarkdownUserText } from './chat/UserMarkdown.tsx'
 import { ActivityPill, UsagePill } from './chat/StatsPills.tsx'
 import { registerConversationNodes } from './conversation-nodes/register.ts'
 import { QuotaNoticeHost } from './chat/QuotaNoticeHost.tsx'
@@ -76,6 +77,7 @@ export const inject = [
   'slots', 'sessions', 'uiWorkspace', 'uiSession', 'uiConversation', 'locale',
   'configForms', 'remote', 'remote.session', 'remote.workspaceFiles', 'sidebarRight',
 ]
+
 
 /**
  * Mount all Chat-owned contributions.
@@ -174,6 +176,11 @@ export function apply(ctx: Context): void {
     name: 'conversation.chat.user.content', scope: 'session', locale: NS,
     children: { 'conversation.chat.user.images': { kind: 'single', scope: 'session' } },
   }, UserContent)
+  // Chat owns the Markdown projection of user messages; the user-text factory
+  // asks for this key and falls back to plain runs for every other view.
+  ctx.slots.inject('conversation.user.text.node', () => ctx.slots.register({
+    name: 'conversation.user.text.node', key: 'markdown', locale: NS,
+  }, MarkdownUserText))
 
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({
     name: 'settings.general.item',

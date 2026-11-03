@@ -164,7 +164,9 @@ class StreamingRenderer {
  * `MarkdownDelegateProvider` can delegate ordinary HTTP(S) activation while
  * modified clicks retain native behavior. `variant="compact"` uses secondary
  * text sizing, uniform bold headings, and tight block spacing; the default
- * `body` variant uses the full document typography.
+ * `body` variant uses the full document typography. Both variants inherit the
+ * host's font size and line height, so a bubble that owns those measurements
+ * keeps its scale around embedded blocks.
  * The provider's `openFile` enables local Markdown links in settled messages,
  * including `#L24` and `#L24-L30` destinations (ranges open at their first line).
  * @returns A GFM document with TeX math rendered through KaTeX; raw HTML and

@@ -8,7 +8,8 @@ import type { InboxState } from '@deepseek-ai/dsh-agent/types'
 import type {
   CommandNode, CompactionSummaryNode, ConversationLocationDataStore, ConversationTurnDataMap,
   ConversationGroupData, GroupSnapshot,
-  MessageImageLoader, MessageImageSource, MessageImagesOwnerProps, RenderEntry, TurnLocation, UserTextFacts, UserTextInput,
+  MessageImageLoader, MessageImageSource, MessageImagesOwnerProps, RenderEntry, TurnLocation, UserTextFacts,
+  UserTextInput, UserTextNode,
 } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {
   HostObservable, InjectFace, KeyedSnapshotSelectorHook, PropsLocale, PropsRenderSlots, PropsRuntime,
@@ -50,6 +51,17 @@ export type UsePresentation = SnapshotSelectorHook<ChatPresentationPolicy>
 export interface OpenFileOptions {
   /** 1-based line to reveal; absent = the file's beginning. */
   readonly line?: number
+}
+
+/**
+ * Props Chat's `conversation.user.text.node` occupant receives: the keyed node
+ * share plus the Chat labels. A Chat view always supplies `t`; a user-text
+ * factory mounted elsewhere renders the source verbatim instead.
+ */
+export interface MarkdownUserTextProps
+  extends PropsRuntime<'conversation.user.text.node', 'markdown'>, PropsLocale<'chat'> {
+  /** The user message source, always the node's whole original range. */
+  readonly node: UserTextNode<'markdown'>
 }
 
 /** Owner currency of the completed-Turn extension chain. */
