@@ -9,6 +9,7 @@ import type { UserTextNode } from '../src/client/contract/user-text.ts'
 import { UserTextRegistry } from '../src/client/conversation/user-text-registry.ts'
 import { UserText, PlainUserText, SessionReference } from '../src/client/user-text/UserText.tsx'
 import { sessionReferenceRule } from '../src/client/user-text/session-reference-rule.ts'
+import { markdownMessageRule } from '../src/client/user-text/markdown-rule.ts'
 import { collapseWhitespaceRule, trimWhitespaceRule } from '../src/client/user-text/whitespace-rules.ts'
 import { skillReferenceRule } from '../../ui-skill/src/client/user-text-rules.ts'
 import { SkillReference } from '../../ui-skill/src/client/SkillReference.tsx'
@@ -38,7 +39,7 @@ export function createUserTextFixture(actions: UserTextFixtureActions = {}): (in
   const registry = new UserTextRegistry(ctx)
   for (const rule of [
     sessionReferenceRule, skillReferenceRule, fileReferenceRule, folderReferenceRule,
-    goalCommandReferenceRule, collapseWhitespaceRule, trimWhitespaceRule,
+    goalCommandReferenceRule, markdownMessageRule, collapseWhitespaceRule, trimWhitespaceRule,
   ]) registry.register(rule)
   const useUserTextRevision = bindSnapshotSelector({
     getSnapshot: () => registry.getSnapshot(),
@@ -60,6 +61,7 @@ export function createUserTextFixture(actions: UserTextFixtureActions = {}): (in
       case 'folder': return createElement(FolderReference, owner as ComponentProps<typeof FolderReference>)
       case 'skill': return createElement(SkillReference, { ...owner, openSkill } as ComponentProps<typeof SkillReference>)
       case 'command': return createElement(GoalCommandReference, owner as ComponentProps<typeof GoalCommandReference>)
+      // The fixture supplies no Chat labels, so the Markdown arm keeps its source text.
       default: return options?.fallback ?? null
     }
   }
