@@ -83,7 +83,10 @@ async function bench(nodes: ToolResultNode[]) {
   const runtime = await SlotTestRuntime.create()
   runtime.ctx.provide('fileDrag', { actions: { prepare: async () => ({ start: () => true, release: () => {} }), reportFailure: () => {} }, read: () => undefined } satisfies import('@deepseek-ai/cordis').Context['fileDrag'])
   const openWorkspacePath = vi.fn(async () => ({ ok: true, value: { opened: true } }))
-  runtime.remote.provideNamespaces({ session: { openWorkspacePath } })
+  runtime.remote.provideNamespaces({
+    session: { openWorkspacePath },
+    workspaceFiles: { readBytes: async () => ({ ok: false, error: { code: 'UNUSED' } }) },
+  })
   runtime.ctx.provide('configForms', { developerTools: { enabled: createSnapshotStore(true) }, get: () => stubConfigForm().scope } as never)
   const layout = { openDetails: vi.fn(), closeDetails: vi.fn() }
   runtime.ctx.provide('connection', { state: createSnapshotStore('connected') } as never)
@@ -366,6 +369,7 @@ describe('registrant declaration injection', () => {
       session: {
         openWorkspacePath: vi.fn(async () => ({ ok: true, value: { opened: true } })),
       },
+      workspaceFiles: { readBytes: async () => ({ ok: false, error: { code: 'UNUSED' } }) },
     })
     runtime.ctx.provide('configForms', { developerTools: { enabled: createSnapshotStore(true) }, get: () => stubConfigForm().scope } as never)
     runtime.ctx.provide('connection', { state: createSnapshotStore('connected') } as never)

@@ -137,7 +137,10 @@ async function bench(snapshot: ChatSnapshot) {
   const sidebarRight = { openResource: vi.fn<(address: string) => void>() }
   ctx.provide('sidebarRight', sidebarRight as never)
   ctx.provide('uiWorkspace', {} as never)
-  runtime.remote.provideNamespaces({ session: { openWorkspacePath } })
+  runtime.remote.provideNamespaces({
+    session: { openWorkspacePath },
+    workspaceFiles: { readBytes: async () => ({ ok: false, error: { code: 'UNUSED' } }) },
+  })
   const locale = new LocaleRuntime(ctx)
   ctx.provide('locale', locale)
   locale.register(CONVERSATION_NS, { zh: conversationZh, en: conversationEn })
