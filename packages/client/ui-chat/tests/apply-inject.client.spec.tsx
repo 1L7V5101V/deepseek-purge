@@ -82,7 +82,10 @@ async function bench(initialSettings?: ChatSettings, withBrowserRegistry = true,
   const openWorkspacePath = vi.fn<ClientRemote['session']['openWorkspacePath']>(
     () => Promise.resolve({ ok: true, value: { opened: true } }),
   )
-  runtime.remote.provideNamespaces({ session: { openWorkspacePath } })
+  runtime.remote.provideNamespaces({
+    session: { openWorkspacePath },
+    workspaceFiles: { readBytes: vi.fn<ClientRemote['workspaceFiles']['readBytes']>() },
+  })
   const openSession = vi.fn<(id: SessionId) => void>()
   runtime.ctx.provide('uiWorkspace', {
     openWorkspace: vi.fn(async (_workspaceId: WorkspaceId, beforeOpen: (id: SessionId) => void) => {

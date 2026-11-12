@@ -172,7 +172,9 @@ class StreamingRenderer {
  * `MarkdownDelegateProvider` can delegate ordinary HTTP(S) activation while
  * modified clicks retain native behavior. `variant="compact"` uses secondary
  * text sizing, uniform bold headings, and tight block spacing; the default
- * `body` variant uses the full document typography. `omitHtml` renders raw
+ * `body` variant uses the full document typography. Both variants inherit the
+ * host's font size and line height, so a bubble that owns those measurements
+ * keeps its scale around embedded blocks. `omitHtml` renders raw
  * HTML as nothing instead of literal text, for documents written for HTML
  * renderers, such as package READMEs. `textInteractionSource` marks the
  * existing root as a source for text selection interactions.

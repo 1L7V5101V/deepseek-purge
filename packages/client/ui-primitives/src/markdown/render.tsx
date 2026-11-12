@@ -33,6 +33,7 @@ import { HoverCard } from '../HoverCard.tsx'
 import { DraggableImage } from '../DraggableImage.tsx'
 import { ImageLightbox } from '../ImageLightbox.tsx'
 import { ImagePreview } from '../ImagePreview.tsx'
+import { VisualizeFrame } from './VisualizeFrame.tsx'
 import type { PositionedBlock } from './incremental.ts'
 import css from './MarkdownText.module.css'
 
@@ -402,6 +403,8 @@ function renderNode(node: Md.RootContent, key: Key, context: MarkdownRenderConte
       return renderImageReference(node, key, context)
     case 'footnoteReference':
       return renderFootnoteReference(node, key, context)
+    case 'visualize':
+      return <VisualizeFrame key={key} path={node.path} mode={node.mode} />
     case 'definition':
     case 'footnoteDefinition':
       // Targets render elsewhere: definitions resolve references in place;

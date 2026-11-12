@@ -117,6 +117,22 @@ describe('MarkdownText', () => {
     expect(container.textContent).toContain('**注意：**内容')
   })
 
+  it('keeps single-tilde numeric ranges literal while double-tilde strikethrough still applies', () => {
+    const source = [
+      '平均值口径的 4 组全部集中在 800~1100 nC/m 这一窄带，而且大多是 0.5~1 光强附近的点。',
+      '',
+      'Removed ~~gone~~ text.',
+    ].join('\n')
+
+    for (const streaming of [false, true]) {
+      const rendered = render(<MarkdownText text={source} streaming={streaming} />)
+      expect([...rendered.container.querySelectorAll('del')].map(node => node.textContent)).toEqual(['gone'])
+      expect(rendered.container.querySelector('p')?.textContent)
+        .toBe('平均值口径的 4 组全部集中在 800~1100 nC/m 这一窄带，而且大多是 0.5~1 光强附近的点。')
+      rendered.unmount()
+    }
+  })
+
   it('links complete HTTP(S) inline code without promoting commands, unsafe schemes, or fences', () => {
     const localUrl = 'http://127.0.0.1:3199/?demo=1'
     const remoteUrl = 'https://example.com/preview?q=one%20two#result'

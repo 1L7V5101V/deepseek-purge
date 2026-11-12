@@ -9,7 +9,8 @@ import type {
   CommandNode, CompactionSummaryNode, ConversationLocationDataStore, ConversationTurnDataMap,
   TextInteractionGesture, TextInteractionSurface,
   ConversationGroupData, GroupSnapshot,
-  MessageImageLoader, MessageImageSource, MessageImagesOwnerProps, RenderEntry, TurnLocation, UserTextFacts, UserTextInput,
+  MessageImageLoader, MessageImageSource, MessageImagesOwnerProps, RenderEntry, TurnLocation, UserTextFacts,
+  UserTextInput, UserTextNode,
 } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import type {
   HostObservable, InjectFace, KeyedSnapshotSelectorHook, PropsLocale, PropsRenderSlots, PropsRuntime,
@@ -54,6 +55,17 @@ export type UsePresentation = SnapshotSelectorHook<ChatPresentationPolicy>
 export interface OpenFileOptions {
   /** 1-based line to reveal; absent = the file's beginning. */
   readonly line?: number
+}
+
+/**
+ * Props Chat's `conversation.user.text.node` occupant receives: the keyed node
+ * share plus the Chat labels. A Chat view always supplies `t`; a user-text
+ * factory mounted elsewhere renders the source verbatim instead.
+ */
+export interface MarkdownUserTextProps
+  extends PropsRuntime<'conversation.user.text.node', 'markdown'>, PropsLocale<'chat'> {
+  /** The user message source, always the node's whole original range. */
+  readonly node: UserTextNode<'markdown'>
 }
 
 /** Owner currency of the completed-Turn extension chain. */
@@ -351,6 +363,8 @@ export interface ChatViewInjected {
   loadOlder: () => void
   /** Consume the prepared page synchronously; false when none is ready. */
   consumeOlder: () => boolean
+  /** Read one visualization HTML file's complete UTF-8 source for inline rendering. */
+  readVisualizeHtml: (path: string, signal: AbortSignal) => Promise<string>
   /** Jump loader: page history back through seq; resolves when the window covers it. */
   loadThrough: (seq: SessionSeq) => Promise<void>
   loadImage: MessageImageLoader

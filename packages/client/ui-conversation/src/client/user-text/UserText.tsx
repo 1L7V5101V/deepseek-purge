@@ -42,7 +42,18 @@ export function UserText({
       })}
     </Fragment>
   })}</>, [nodes, text, interactive, renderSlot])
-  return <HoverCardGroup as="span" className={ellipsis ? css.ellipsis : css.root}>{content}</HoverCardGroup>
+  // A projected Markdown block owns block-level spacing, so the root becomes a
+  // block box; plain projections stay inline runs inside the host's line box.
+  const block = nodes !== undefined
+  const className = ellipsis ? css.ellipsis : block ? css.markdown : css.root
+  // A Markdown block carries its own paragraphs and fences; the host bubble's
+  // pre-wrap would otherwise paint every source newline as another blank line.
+  const whiteSpace = block ? 'normal' : undefined
+  return (
+    <HoverCardGroup as="span" className={className} style={whiteSpace === undefined ? undefined : { whiteSpace }}>
+      {content}
+    </HoverCardGroup>
+  )
 }
 
 /**

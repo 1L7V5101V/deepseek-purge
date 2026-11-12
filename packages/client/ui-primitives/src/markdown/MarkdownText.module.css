@@ -5,7 +5,10 @@
 .markdown {
   min-width: 0;
   overflow-wrap: anywhere;
-  font: var(--dsw-font-markdown-base);
+  /* Family and weight only: the host keeps its own size and line height so a
+     user-message bubble stays at the composer's scale. */
+  font-family: var(--dsw-font-markdown-base-font-family);
+  font-weight: var(--dsw-font-markdown-base-font-weight);
   color: var(--dsw-alias-label-primary);
 }
 

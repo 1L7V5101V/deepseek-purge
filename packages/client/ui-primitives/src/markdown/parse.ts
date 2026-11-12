@@ -6,10 +6,17 @@
  * plus the math extensions, so the arms differ only where TeX delimiters
  * begin a math construct (a `$$` block is a paragraph while streaming and a
  * math block once settled, by design).
+ *
+ * Both arms disable GFM's single-tilde strikethrough. In Chinese scientific
+ * prose an ASCII tilde between two numbers means a range (`800~1100 nC/m`,
+ * `0.5~1`), and two such ranges in one sentence pair them into a
+ * strikethrough that deletes everything between them. Strikethrough keeps
+ * working with the double tilde.
  */
 
 import type { Root } from 'mdast'
 import { recoverLocalImages } from './local-image-syntax.ts'
+import { recoverVisualize } from './visualize-syntax.ts'
 import { fromMarkdown } from 'mdast-util-from-markdown'
 import { gfmFromMarkdown } from 'mdast-util-gfm'
 import { mathFromMarkdown } from 'mdast-util-math'
@@ -29,10 +36,10 @@ const gfmOptions = { singleTilde: false }
  * @returns The mdast root.
  */
 export function parseGfm(text: string): Root {
-  return recoverLocalImages(fromMarkdown(text, {
+  return recoverVisualize(recoverLocalImages(fromMarkdown(text, {
     extensions: [gfm(gfmOptions), cjkFriendlyStrong()],
     mdastExtensions: [gfmFromMarkdown(), windowsPathDestinations()],
-  }), text)
+  }), text), text)
 }
 
 /**
@@ -42,8 +49,8 @@ export function parseGfm(text: string): Root {
  * @returns The mdast root.
  */
 export function parseGfmWithMath(text: string): Root {
-  return recoverLocalImages(fromMarkdown(text, {
+  return recoverVisualize(recoverLocalImages(fromMarkdown(text, {
     extensions: [gfm(gfmOptions), cjkFriendlyStrong(), mathCompatibility(), math()],
     mdastExtensions: [gfmFromMarkdown(), mathFromMarkdown(), windowsPathDestinations()],
-  }), text)
+  }), text), text)
 }

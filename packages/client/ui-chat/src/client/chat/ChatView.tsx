@@ -9,7 +9,7 @@ import type { InboxState } from '@deepseek-ai/dsh-agent/types'
 import type { PendingSubmission } from '@deepseek-ai/dsh-api-session-controller/client'
 import {
   Button, FenceCodeBlock, IconChevronDownOutlineRegular, MarkdownDelegateProvider, Modal,
-  type MarkdownDelegateFenceInfo, type MarkdownMenuTarget,
+  selectionToMarkdown, type MarkdownDelegateFenceInfo, type MarkdownMenuTarget,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import { isAtOrOutside } from '../contract/group-tree.ts'
 import type { ChatFlowHookContext, ChatViewSlotProps, OpenFileOptions } from '../contract/slots.ts'
@@ -64,6 +64,7 @@ export function ChatView({
   useSession, useChat, useConversation, useSessions, renderSlot,
   sessionId, openFile, openExternalLink, resolveFilePath, useContextMenu,
   loadOlder, consumeOlder, loadThrough, loadImage, inspectCall, chatScroll, forkAt,
+  readVisualizeHtml,
   usePresentation, useProjection, useInteractionIds, dispatchInteraction, t, fileDrag,
 }: ChatViewSlotProps) {
   const { getTriggerProps } = useContextMenu()
@@ -227,9 +228,33 @@ export function ChatView({
   const interactionIds = useInteractionIds(ids => ids)
   const textInteraction = useTextInteraction(scroll.columnRef, interactionSurfaceRef, dispatchInteraction, interactionIds)
   const flowContext = useMemo<ChatFlowHookContext>(() => ({ motion: scroll.motion }), [scroll.motion])
+  // Native copy hands the clipboard the rendered DOM (KaTeX glyphs, flattened
+  // structure). Project the selection back onto Markdown instead; the
+  // per-message copy button already writes the source text directly.
+  const frameRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const frame = frameRef.current
+    if (frame === null) return
+    const onCopy = (event: ClipboardEvent): void => {
+      if (event.defaultPrevented || event.clipboardData === null) return
+      const target = event.target
+      if (target instanceof Element
+        && target.closest('input, textarea, [contenteditable="true"]') !== null) return
+      const selection = window.getSelection()
+      if (selection === null || selection.isCollapsed || selection.rangeCount === 0) return
+      const range = selection.getRangeAt(0)
+      if (!frame.contains(range.commonAncestorContainer)) return
+      const markdown = selectionToMarkdown(range)
+      if (markdown === '') return
+      event.clipboardData.setData('text/plain', markdown)
+      event.preventDefault()
+    }
+    document.addEventListener('copy', onCopy, true)
+    return () => { document.removeEventListener('copy', onCopy, true) }
+  }, [])
 
   return (
-    <div className={css.frame}>
+    <div ref={frameRef} className={css.frame}>
       {scroll.initialized && (
         <TurnNavigator
           items={railItems}
@@ -277,6 +302,7 @@ export function ChatView({
               openExternalLink={openExternalLink}
               fileImages={fileImages}
               renderCode={renderCode}
+              readVisualizeHtml={readVisualizeHtml}
             >
               {renderSlot('conversation.chat.flow', {
                 entries, pendingInputs, lastInputTurn, deferCollapse,

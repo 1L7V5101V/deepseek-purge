@@ -242,13 +242,14 @@ export function CodeBlock({
 
   return (
     <div ref={rootRef} className={clsx(css.block, 'md-code-block', lineNumbers && css.numbered, diffRows !== undefined && !lineNumbers && css.diffFence, toolbarLabels !== undefined && css.card, className)}
+      data-code-lang={lang}
       data-line-numbers={lineNumbers || undefined}
       data-code-wrap={toolbarLabels === undefined ? undefined : wrapped}
       style={sourceLines === undefined ? undefined : {
         '--dsl-code-block-line-number-width': `${Math.max(2, String(sourceLines.length).length)}ch`,
       } as CSSProperties}>
       {/* These paired attributes are stable semantic hooks for owner styling and DOM tests. */}
-      {showHeader && <div className={css.bannerWrap}>
+      {showHeader && <div className={css.bannerWrap} data-copy-ignore="">
         {toolbarLabels !== undefined ? <CodeToolbar
           lang={lang} labels={toolbarLabels} copyLabel={copyLabel} copiedLabel={copiedLabel}
           copied={copied} wrapped={wrapped} onCopy={onCopy}

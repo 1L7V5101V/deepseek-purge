@@ -36,6 +36,7 @@ import { ChatView } from './chat/ChatView.tsx'
 import { ChatFlow } from './chat/ChatFlow.tsx'
 import { registerChatNodeRenderers } from './chat/register-node-renderers.ts'
 import { UserContent } from './chat/UserContent.tsx'
+import { MarkdownUserText } from './chat/UserMarkdown.tsx'
 import { ActivityPill, UsagePill } from './chat/StatsPills.tsx'
 import { registerConversationNodes } from './conversation-nodes/register.ts'
 import { registerFenceLayers } from './fence/register.ts'
@@ -79,8 +80,9 @@ export const CHAT_NODE_INJECT: ChatNodeInjected = {
 /** Services required by the Chat target and its presentation registrations. */
 export const inject = [
   'slots', 'sessions', 'uiWorkspace', 'uiSession', 'uiConversation', 'locale',
-  'configForms', 'connection', 'remote', 'remote.session', 'sidebarRight', 'fileDrag',
+  'configForms', 'connection', 'remote', 'remote.session', 'remote.workspaceFiles', 'sidebarRight', 'fileDrag',
 ]
+
 
 /**
  * Mount all Chat-owned contributions.
@@ -179,6 +181,11 @@ export function apply(ctx: Context): void {
     name: 'conversation.chat.user.content', scope: 'session', locale: NS,
     children: { 'conversation.chat.user.images': { kind: 'single', scope: 'session' } },
   }, UserContent)
+  // Chat owns the Markdown projection of user messages; the user-text factory
+  // asks for this key and falls back to plain runs for every other view.
+  ctx.slots.inject('conversation.user.text.node', () => ctx.slots.register({
+    name: 'conversation.user.text.node', key: 'markdown', locale: NS,
+  }, MarkdownUserText))
 
   ctx.slots.inject('settings.general.item', () => ctx.slots.register({
     name: 'settings.general.item',
@@ -294,6 +301,14 @@ export function apply(ctx: Context): void {
             (attachment: ImageAttachmentRef) => ctx.uiConversation.imageUrl(sessionId, attachment),
             { peek: (attachment: ImageAttachmentRef) => ctx.uiConversation.peekImageUrl(sessionId, attachment) },
           ),
+          readVisualizeHtml: async (path, signal) => {
+            const cwd = ctx.sessions.list.getSnapshot().byId[sessionId]?.cwd
+            const target = resolveWorkspacePath(cwd, path)
+            const result = await ctx.remote.workspaceFiles.readBytes(sessionId, target, {}, signal)
+            signal.throwIfAborted()
+            if (!result.ok) throw new Error(result.error.code)
+            return new TextDecoder().decode(result.value.data)
+          },
           chatScroll: {
             save: (position) => {
               if (position === null) chatScrollPositions.delete(sessionId)

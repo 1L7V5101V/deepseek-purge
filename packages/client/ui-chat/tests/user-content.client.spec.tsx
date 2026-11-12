@@ -12,11 +12,13 @@ import { zh as commonZh } from '@deepseek-ai/dsh-client-locale/src/locales/zh.ts
 import type { PropsRenderFactories, PropsRenderSlots, PropsRuntime } from '@deepseek-ai/dsh-client-ui-slots'
 import type { UserContentAttachment, UserContentData, UserContentInput } from '../src/client/contract/slots.ts'
 import { UserContent } from '../src/client/chat/UserContent.tsx'
+import { MarkdownUserText } from '../src/client/chat/UserMarkdown.tsx'
 import { en, NS, zh } from '../src/client/locale.ts'
 import type { UserTextInjected } from '@deepseek-ai/dsh-client-ui-conversation/client'
 import { UserTextRegistry } from '../../ui-conversation/src/client/conversation/user-text-registry.ts'
 import { UserText, PlainUserText, SessionReference } from '../../ui-conversation/src/client/user-text/UserText.tsx'
 import { sessionReferenceRule } from '../../ui-conversation/src/client/user-text/session-reference-rule.ts'
+import { markdownMessageRule } from '../../ui-conversation/src/client/user-text/markdown-rule.ts'
 import { collapseWhitespaceRule, trimWhitespaceRule } from '../../ui-conversation/src/client/user-text/whitespace-rules.ts'
 import { fileReferenceRule, folderReferenceRule } from '../../ui-reference/src/client/user-text-rules.ts'
 import { FileReference, FolderReference } from '../../ui-reference/src/client/FileReference.tsx'
@@ -59,7 +61,7 @@ async function bench() {
     const userText = new UserTextRegistry(ctx)
     for (const rule of [
       sessionReferenceRule, fileReferenceRule, folderReferenceRule, skillReferenceRule,
-      collapseWhitespaceRule, trimWhitespaceRule,
+      markdownMessageRule, collapseWhitespaceRule, trimWhitespaceRule,
     ]) {
       userText.register(rule)
     }
@@ -80,6 +82,7 @@ async function bench() {
       inject: () => ({ openFile, resolveFilePath: path => path }) }, FileReference)
     ctx.slots.register({ name: 'conversation.user.text.node', key: 'folder' }, FolderReference)
     ctx.slots.register({ name: 'conversation.user.text.node', key: 'skill', inject: () => ({ openSkill }) }, SkillReference)
+    ctx.slots.register({ name: 'conversation.user.text.node', key: 'markdown', locale: NS }, MarkdownUserText)
     ctx.slots.inject('conversation.chat.user.images', () => ctx.slots.register({ name: 'conversation.chat.user.images' }, function ImageProbe(props) {
       imageCalls.push(props)
       const source = props.images[0]

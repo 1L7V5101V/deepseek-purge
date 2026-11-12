@@ -2,6 +2,15 @@
   display: contents;
 }
 
+/* A Markdown block owns its own block spacing, so the root becomes a block
+   box instead of a transparent inline container. The bubble keeps its 16px
+   text inset; the renderer's own horizontal padding covers fences and tables. */
+.markdown {
+  display: block;
+  min-width: 0;
+  white-space: normal;
+}
+
 .ellipsis {
   display: block;
   min-width: 0;
