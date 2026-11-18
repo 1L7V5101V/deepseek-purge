@@ -39,6 +39,34 @@ const patches = [
     ].join('\n'),
   },
   {
+    file: join(PLUGIN, 'client.js'),
+    label: 'sealed hint says "this machine", not "official client" (zh)',
+    marker: '已找到本机桌面客户端',
+    find: '"metric.sealed": "已找到官方客户端，点应用解开",',
+    replace: '"metric.sealed": "已找到本机桌面客户端，点应用解开",',
+  },
+  {
+    file: join(PLUGIN, 'client.js'),
+    label: 'asar hint names the desktop client (zh)',
+    marker: '桌面客户端的代码在 app.asar 里',
+    find: '"warn.noRoot.desktop": "官方客户端的代码在 app.asar 里。',
+    replace: '"warn.noRoot.desktop": "桌面客户端的代码在 app.asar 里。',
+  },
+  {
+    file: join(PLUGIN, 'client.js'),
+    label: 'sealed hint says "desktop client" (en)',
+    marker: 'Desktop client found. Apply to unpack',
+    find: '"metric.sealed": "Official client found. Apply to unpack",',
+    replace: '"metric.sealed": "Desktop client found. Apply to unpack",',
+  },
+  {
+    file: join(PLUGIN, 'client.js'),
+    label: 'asar hint names the desktop client (en)',
+    marker: 'The desktop client keeps its code in app.asar',
+    find: '"warn.noRoot.desktop": "Official Harness keeps its code in app.asar.',
+    replace: '"warn.noRoot.desktop": "The desktop client keeps its code in app.asar.',
+  },
+  {
     file: join(PLUGIN, 'lib', 'redteam', 'index.js'),
     label: 'redteam apply() accepts config',
     marker: 'export function apply(ctx, config) {',
@@ -92,6 +120,46 @@ const patches = [
       '    # 保留该行会让整个预设 import 失败、审计记 never started，模式下拉被过滤。list_agents 工具仍在。',
       '',
     ].join('\n'),
+  },
+  {
+    file: join(PLUGIN, 'lib', 'desktop.js'),
+    label: 'treat "DeepSeek Purge.exe" as a desktop host (name table)',
+    marker: '"deepseek purge.exe",',
+    find: '  "deepseek harness",\n  "deepseek-harness",\n]);',
+    replace: [
+      '  "deepseek harness",',
+      '  "deepseek-harness",',
+      '  // 2026-11-18：本 fork 的 exe 叫 DeepSeek Purge.exe。不认这个名字时，插件在 fork 里会把',
+      '  // 官方安装版（D:\\DeepSeek-Harness）误判成「当前宿主」，点应用就会去解开别人的 app.asar。',
+      '  "deepseek purge.exe",',
+      '  "deepseek purge",',
+      ']);',
+    ].join('\n'),
+  },
+  {
+    file: join(PLUGIN, 'lib', 'desktop.js'),
+    label: 'treat "DeepSeek Purge.exe" as a desktop host (exe candidates)',
+    marker: 'path.join(dir, "DeepSeek Purge.exe")',
+    find: '    path.join(dir, "DSH Desktop.exe"),\n    path.join(dir, "DSH Desktop"),\n',
+    replace: [
+      '    path.join(dir, "DSH Desktop.exe"),',
+      '    path.join(dir, "DSH Desktop"),',
+      '    path.join(dir, "DeepSeek Purge.exe"),',
+      '    path.join(dir, "DeepSeek Purge"),',
+      '    path.join(dir, "MacOS", "DeepSeek Purge"),',
+      '    path.join(dir, "Contents", "MacOS", "DeepSeek Purge"),',
+      '',
+    ].join('\n'),
+  },
+  {
+    file: join(PLUGIN, 'lib', 'desktop.js'),
+    label: 'treat "DeepSeek Purge" install trees as desktop (looksLikeDesktopName)',
+    marker: 'purge(\\.exe)?$/i.test(n)',
+    find: String.raw`    /\/dsh desktop\.exe$/i.test(n) ||
+    /\/deepseek[\s._-]*harness\.exe$/i.test(n)`,
+    replace: String.raw`    /\/dsh desktop\.exe$/i.test(n) ||
+    /\/deepseek[\s._-]*harness\.exe$/i.test(n) ||
+    /\/deepseek[\s._-]*purge(\.exe)?$/i.test(n)`,
   },
 ]
 
