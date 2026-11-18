@@ -46,6 +46,18 @@ const SCOPED = [
 
 const stats = { files: 0, hits: 0 }
 
+/**
+ * Fork-only edits that are code, not renames, so a rebase can drop them without any conflict.
+ * The script cannot re-apply these safely; it only reports them so the loss is never silent.
+ */
+const FORK_MARKERS = [
+  ['apps/desktop/src/paths.ts', "PURGE_HOME_DIR_NAME = '.dsh-purge'"],
+  ['apps/desktop/src/main.ts', "app.setPath('userData', resolveDesktopUserData())"],
+  ['apps/desktop/src/main.ts', 'resolveDesktopUserData } from'],
+  ['apps/desktop/cli/dsh.cmd', 'if not defined DSH_HOME'],
+  ['apps/desktop/cli/dsh', 'DSH_HOME:=$HOME/.dsh-purge'],
+]
+
 /** Rewrite one file, preserving its existing bytes and line endings. */
 function rewrite(relative, pairs) {
   const absolute = join(ROOT, relative)
@@ -67,6 +79,16 @@ for (const relative of readdirSync(join(ROOT, 'apps/desktop/installer/locales'))
 }
 for (const [relative, from, to] of SCOPED) rewrite(relative, [[from, to]])
 console.log(`rebrand: ${stats.files} file(s), ${stats.hits} replacement(s)`)
+
+const missing = FORK_MARKERS.filter(([relative, marker]) => {
+  const absolute = join(ROOT, relative)
+  return !existsSync(absolute) || !readFileSync(absolute, 'utf8').includes(marker)
+})
+if (missing.length > 0) {
+  console.warn('rebrand: WARNING — a rebase dropped fork-only code; restore it by hand:')
+  for (const [relative, marker] of missing) console.warn(`  ! ${relative}: ${marker}`)
+  process.exitCode = 1
+}
 
 if (process.argv.includes('--icons')) {
   const python = process.env.DSH_PYTHON ?? 'python'
